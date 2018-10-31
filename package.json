@@ -1,0 +1,15 @@
+{
+  "name": "grf-reader",
+  "version": "1.0.0",
+  "description": "GRF reader made in Javascript",
+  "main": "GRF.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "ragnarok",
+    "grf"
+  ],
+  "author": "Emanuel Júnior",
+  "license": "Apache-2.0"
+}
