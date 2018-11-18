@@ -131,12 +131,12 @@ class GRF {
           return;
         }
 
-        if (entry.real_size === 0) {
-          resolve(Buffer.alloc(0));
+        const buffer = this.fr.getBuffer(entry.offset + 46, entry.length_aligned + entry.offset + 46);
+
+        if (entry.real_size === entry.pack_size) {
+          resolve(buffer);
           return;
         }
-  
-        const buffer = this.fr.getBuffer(entry.offset + 46, entry.length_aligned + entry.offset + 46);
 
         this.decodeEntry(buffer, entry, (error, buff) => {
           if (error) {
