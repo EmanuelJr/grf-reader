@@ -1,3 +1,5 @@
+const mask = new Uint8Array([0x80, 0x40, 0x20, 0x10, 0x08, 0x04, 0x02, 0x01]);
+
 const initialPermutationTable = new Uint8Array([
   58, 50, 42, 34, 26, 18, 10, 2,
   60, 52, 44, 36, 28, 20, 12, 4,
@@ -58,19 +60,16 @@ const substitutionBoxTable = [
   ]),
 ];
 
-const mask = new Uint8Array([0x80, 0x40, 0x20, 0x10, 0x08, 0x04, 0x02, 0x01]);
-
 function initialPermutation(src, index) {
   const tmp = new Uint8Array(8);
 
-  for (let i = 0; i < 64; i += 1) { 
+  for (let i = 0; i < 64; i += 1) {
     const j = initialPermutationTable[i] - 1;
-    
-    if (src[index + ((j >> 3) & 7)] & mask[j & 7] !== 0) {
+    if (src[index + ((j >> 3) & 7)] & mask[j & 7]) {
       tmp[(i >> 3) & 7] |= mask[i & 7];
     }
   }
-  
+
   src.set(tmp, index);
 }
 
@@ -79,7 +78,6 @@ function finalPermutation(src, index) {
 
   for (let i = 0; i < 64; i += 1) {
     const j = finalPermutationTable[i] - 1;
-
     if (src[index + ((j >> 3) & 7)] & mask[j & 7]) {
       tmp[(i >> 3) & 7] |= mask[i & 7];
     }
@@ -93,7 +91,6 @@ function transposition(src, index) {
 
   for (let i = 0; i < 32; i += 1) {
     const j = transpositionTable[i] - 1;
-
     if (src[index + (j >> 3)] & mask[j & 7]) {
       tmp[(i >> 3) + 4] |= mask[i & 7];
     }
@@ -121,7 +118,8 @@ function substitutionBox(src, index) {
   const tmp = new Uint8Array(8);
 
   for (let i = 0; i < 4; i += 1) {
-    tmp[i] = (substitutionBoxTable[i][src[i * 2 + 0 + index]] & 0xf0) | (substitutionBoxTable[i][src[i * 2 + 1 + index]] & 0x0f);
+    tmp[i] = (substitutionBoxTable[i][src[i * 2 + 0 + index]] & 0xf0) |
+      (substitutionBoxTable[i][src[i * 2 + 1 + index]] & 0x0f);
   }
 
   src.set(tmp, index);
@@ -129,8 +127,9 @@ function substitutionBox(src, index) {
 
 function roundFunction(src, index) {
   const tmp = new Uint8Array(8);
-  const block = src.slice(index, index + 8);
-  tmp.set(block);
+  for (let i = 0; i < 8; i += 1) {
+    tmp[i] = src[index + i];
+  }
 
   expansion(tmp, 0);
   substitutionBox(tmp, 0);
@@ -148,33 +147,25 @@ function decryptBlock(src, index) {
   finalPermutation(src, index);
 }
 
-function decodeFull(buf, len, entryLen) {
+function decodeFull(buf, len, entry_len) {
+  const { length } = entry_len.toString();
   const nblocks = len >> 3;
 
-  // compute number of digits of the entry length
-  const digits = entryLen.toString().length;
+  const cycle = (length < 3) ? 1 :
+    (length < 5) ? length + 1 :
+    (length < 7) ? length + 9 :
+    length + 15;
 
-  // choose size of gap between two encrypted blocks
-  // digits:  0  1  2  3  4   5   6   7   8   9 ...
-  // cycle:   1  1  1  4  5  14  15  22  23  24 ...
-  const cycle = (digits < 3) ? 1
-              : (digits < 5) ? digits + 1
-              : (digits < 7) ? digits + 9
-              : digits + 15;
-
-  // first 20 blocks are all des-encrypted
   for (let i = 0; i < 20 && i < nblocks; i += 1) {
     decryptBlock(buf, i * 8);
   }
 
   for (let i = 20, j = 0; i < nblocks; i += 1) {
-    // decrypt block
     if (i % cycle === 0) {
       decryptBlock(buf, i * 8);
       continue;
     }
 
-    // de-shuffle block
     if (j === 7) {
       shuffleDec(buf, i * 8);
       j = 0;
@@ -192,6 +183,22 @@ function decodeHeader(buf, len) {
   }
 }
 
+const shuffleDecTable = (() => {
+  const out = new Uint8Array(256);
+  const list = [0x00, 0x2b, 0x6c, 0x80, 0x01, 0x68, 0x48, 0x77, 0x60, 0xff, 0xb9, 0xc0, 0xfe, 0xeb];
+
+  for (let i = 0; i < 256; i += 1) {
+    out[i] = i;
+  }
+
+  for (let i = 0; i < list.length; i += 2) {
+    out[list[i + 0]] = list[i + 1];
+    out[list[i + 1]] = list[i + 0];
+  }
+
+  return out;
+})();
+
 function shuffleDec(src, index) {
   const tmp = new Uint8Array(8);
 
@@ -202,47 +209,11 @@ function shuffleDec(src, index) {
   tmp[4] = src[index + 1];
   tmp[5] = src[index + 2];
   tmp[6] = src[index + 5];
-  tmp[7] = desSubs(src[index + 7]);
-
+  tmp[7] = shuffleDecTable[src[index + 7]];
   src.set(tmp, index);
 }
 
-function desSubs(inb) {
-  switch (inb) {
-    case 0x00:
-      return 0x2B;
-    case 0x2B:
-      return 0x00;
-    case 0x6C:
-      return 0x80;
-    case 0x01:
-      return 0x68;
-    case 0x68:
-      return 0x01;
-    case 0x48:
-      return 0x77;
-    case 0x60:
-      return 0xFF;
-    case 0x77:
-      return 0x48;
-    case 0xB9:
-      return 0xC0;
-    case 0xC0:
-      return 0xB9;
-    case 0xFE:
-      return 0xEB;
-    case 0xEB:
-      return 0xFE;
-    case 0x80:
-      return 0x6C;
-    case 0xFF:
-      return 0x60;
-    default:
-      return inb;
-  }
-}
-
 module.exports = {
-  decodeFull: decodeFull,
-  decodeHeader: decodeHeader,
+  decodeFull,
+  decodeHeader,
 };

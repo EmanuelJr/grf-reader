@@ -1,10 +1,14 @@
 {
   "name": "grf-reader",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "GRF reader made in Javascript",
   "main": "GRF.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/emanueljr/grf-reader.git"
   },
   "keywords": [
     "ragnarok",
