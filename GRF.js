@@ -127,7 +127,12 @@ class GRF {
         const entry = this.entries[pos];
 
         if (!(entry.type & GRF.FILELIST_TYPE_FILE)) {
-          reject('There is a problem in this file');
+          reject('Probably it\'s a folder');
+          return;
+        }
+
+        if (entry.real_size === 0) {
+          resolve(Buffer.alloc(0));
           return;
         }
   
