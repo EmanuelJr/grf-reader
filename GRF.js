@@ -122,20 +122,20 @@ class GRF {
     const path = filename.toLowerCase();
     const pos = this.search(path);
 
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       if (pos !== -1) {
         const entry = this.entries[pos];
-  
+
         if (!(entry.type & GRF.FILELIST_TYPE_FILE)) {
-          resolve(null);
+          reject('There is a problem in this file');
           return;
         }
   
         const buffer = this.fr.getBuffer(entry.offset + 46, entry.length_aligned + entry.offset + 46);
-        
+
         this.decodeEntry(buffer, entry, (error, buff) => {
           if (error) {
-            resolve(null);
+            reject(error);
             return;
           }
 
@@ -144,7 +144,7 @@ class GRF {
         return;
       }
   
-      resolve(null);
+      reject('File doesn\'t exist');
     });
   }
 }
