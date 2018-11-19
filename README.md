@@ -1,11 +1,12 @@
 # GRF Reader
-GRF reader made in Javascript.
+[![npm version](https://badge.fury.io/js/grf-reader.svg)](https://www.npmjs.com/package/grf-reader)
 
 ## Basic usage
 The method `getFile` can be used to get the `Buffer` of the target file.
+You can get the list of files on `entries` field.
 
 ```js
-const GRFReader = require('./GRF');
+const GRFReader = require('grf-reader');
 const grf = new GRFReader('./data.grf');
 
 (async () => {
@@ -17,3 +18,4 @@ const grf = new GRFReader('./data.grf');
   }
 })();
 ```
+
