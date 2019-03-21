@@ -126,43 +126,6 @@ class FileReader {
     return out;
   }
 
-  getPos() {
-    const byteBuff = new ArrayBuffer(4);
-    const wba = new Int8Array(byteBuff);
-    const wia = new Int32Array(byteBuff);
-
-    wba[2] = this.getUInt8();
-    wba[1] = this.getUInt8();
-    wba[0] = this.getUInt8();
-    wba[3] = 0;
-
-    let p = 0 + wia[0];
-    const dir = p & 0x0f;
-    p >>= 4;
-
-    const y = p & 0x03FF;
-    p >>= 10;
-
-    const x = p & 0x03FF;
-
-    return [x, y, dir];
-  }
-
-  getPos2() {
-    const a = this.getInt8();
-    const b = this.getInt8();
-    const c = this.getInt8();
-    const d = this.getInt8();
-    const e = this.getInt8();
-
-    return [
-      ((a & 0xFF) << 2) | ((b & 0xC0) >> 6), // x1
-      ((b & 0x3F) << 4) | ((c & 0xF0) >> 4), // y1
-      ((d & 0xFC) >> 2) | ((c & 0x0F) << 6), // x2
-      ((d & 0x03) << 8) | ((e & 0xFF)), // y2
-    ];
-  }
-
   getBuffer(start, end, setPos = true) {
     const length = end - start;
     const buffer = new Buffer.alloc(length);

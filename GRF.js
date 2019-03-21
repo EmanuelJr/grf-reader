@@ -1,10 +1,12 @@
 const zlib = require('zlib');
 const FileReader = require('./FileReader');
 const DES = require('./DES');
+const utils = require('./utils');
 
 class GRF {
   constructor(file) {
     this.fr = new FileReader(file);
+
     const header = {
       signature: this.fr.getMany('UInt8', 15),
       key: this.fr.getMany('UInt8', 15),
@@ -14,37 +16,37 @@ class GRF {
       version: this.fr.getUInt32(),
     };
 
-    header.signature = String.fromCharCode.apply(null, header.signature);
+    header.signature = String.fromCharCode(...header.signature);
     header.filecount -= header.skip + 7;
 
     if (header.signature !== 'Master of Magic') {
-      const error = `Incorrect header signature: "${header.signature}", must be "Master of Magic"`;
-      throw new Error(error);
+      const error = `Incorrect header signature: "${header.signature}", should be "Master of Magic"`;
+      throw error;
     }
 
     if (parseInt(header.version, 10) !== 0x200) {
-      const error = `Incorrect header version "0x${parseInt(header.version, 10).toString(16)}", must be "0x200"`;
-      throw new Error(error);
+      const error = `Incorrect header version "0x${parseInt(header.version, 10).toString(16)}", should be "0x200"`;
+      throw error;
     }
 
     if (header.file_table_offset + 46 > file.size || header.file_table_offset < 0) {
-      const error = `Can't jump to table list (${header.file_table_offset}), file length: ${file.size}`;
-      throw new Error(error);
+      const error = `Can not jump to table list (${header.file_table_offset}), file length: ${file.size}`;
+      throw error;
     }
 
+    const tableBuffer = this.fr.getBuffer(header.file_table_offset + 46, header.file_table_offset + 46 + 8);    
     const table = {
-      pack_size: this.fr.getUInt32(),
-      real_size: this.fr.getUInt32(),
+      pack_size: tableBuffer.readUInt32LE(0),
+      real_size: tableBuffer.readUInt32LE(4),
     };
     
-    const buffer = this.fr.getBuffer(header.file_table_offset + 46 + 8, table.pack_size);
-    const data = new Uint8Array(buffer);
-    const out = zlib.inflateSync(data);
+    const buffer = this.fr.getBuffer(header.file_table_offset + 46 + 8, header.file_table_offset + 46 + 8 + table.pack_size);
+    const out = zlib.inflateSync(buffer);
 
     const entries = this.loadEntries(out, header.filecount);
 
     table.data = '';
-    for (let i = 0, count = entries.length; i < count; i += 1) {
+    for (let i = 0; i < entries.length; i += 1) {
       table.data += entries[i].filename + '\0';
       entries[i].filename = entries[i].filename.toLowerCase();
     }
@@ -89,7 +91,7 @@ class GRF {
     return entries;
   }
 
-  decodeEntry(buffer, entry, callback) {
+  async decodeEntry(buffer, entry) {
     const data = new Uint8Array(buffer);
 
     if (entry.type & GRF.FILELIST_TYPE_ENCRYPT_MIXED) {
@@ -98,7 +100,7 @@ class GRF {
       DES.decodeHeader(data, entry.length_aligned);
     }
 
-    zlib.inflate(data, callback);
+    return utils.inflateAsync(data);
   }
 
   search(filename) {
@@ -118,39 +120,27 @@ class GRF {
     return -1;
   }
 
-  getFile(filename) {
+  async getFile(filename) {
     const path = filename.toLowerCase();
     const pos = this.search(path);
 
-    return new Promise((resolve, reject) => {
-      if (pos !== -1) {
-        const entry = this.entries[pos];
+    if (pos !== -1) {
+      const entry = this.entries[pos];
 
-        if (!(entry.type & GRF.FILELIST_TYPE_FILE)) {
-          reject('Probably it\'s a folder');
-          return;
-        }
-
-        const buffer = this.fr.getBuffer(entry.offset + 46, entry.length_aligned + entry.offset + 46);
-
-        if (entry.real_size === entry.pack_size) {
-          resolve(buffer);
-          return;
-        }
-
-        this.decodeEntry(buffer, entry, (error, buff) => {
-          if (error) {
-            reject(error);
-            return;
-          }
-
-          resolve(buff);
-        });
-        return;
+      if (!(entry.type & GRF.FILELIST_TYPE_FILE)) {
+        throw 'Probably it is a folder';
       }
-  
-      reject('File doesn\'t exist');
-    });
+
+      const buffer = this.fr.getBuffer(entry.offset + 46, entry.length_aligned + entry.offset + 46);
+
+      if (entry.real_size === entry.pack_size) {
+        return buffer;
+      }
+
+      return this.decodeEntry(buffer, entry);
+    }
+
+    throw 'File does not exist';
   }
 }
 
