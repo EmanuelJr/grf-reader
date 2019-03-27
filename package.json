@@ -2,7 +2,7 @@
   "name": "grf-reader",
   "version": "1.0.4",
   "description": "Read GRF files with JavaScript",
-  "main": "GRF.js",
+  "main": "./src/GRF.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
