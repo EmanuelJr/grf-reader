@@ -1,7 +1,9 @@
 const zlib = require('zlib');
+const util = require('util');
 const FileReader = require('./FileReader');
 const DES = require('./DES');
-const utils = require('./utils');
+
+const inflate = util.promisify(zlib.inflate);
 
 class GRF {
   constructor(file) {
@@ -100,7 +102,7 @@ class GRF {
       DES.decodeHeader(data, entry.length_aligned);
     }
 
-    return utils.inflateAsync(data);
+    return inflate(data);
   }
 
   search(filename) {
