@@ -132,7 +132,7 @@ class FileReader {
   async getBuffer(start, end, setPos = true) {
     const length = end - start;
     const buffer = new Buffer.alloc(length);
-    await fsRead(this.fd, buffer, 0, length, start)
+    await fsRead(this.fd, buffer, 0, length, start);
 
     if (setPos) {
       this.position += length;
