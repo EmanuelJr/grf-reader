@@ -5,11 +5,11 @@ class FileReader {
     this.fd = fs.openSync(path, 'r');
     this.position = 0;
   }
-  
+
   getMany(type, size) {
     const values = new Array(size);
     const func = `get${type}`;
-    
+
     for (let i = 0; i < size; i += 1) {
       values[i] = this[func]();
     }
@@ -90,7 +90,7 @@ class FileReader {
 
   getBinaryString(length) {
     let out = '';
-    
+
     for (let i = 0; i < length; i += 1) {
       const uInt8 = this.getUInt8();
       if (!uInt8) {
@@ -107,7 +107,7 @@ class FileReader {
     const out = {};
     const list = struct.list;
     const keys = Object.keys(list);
-    
+
     for (let i = 0; i < keys.length; i += 1) {
       const name = keys[i];
       const current = list[name];
@@ -129,9 +129,9 @@ class FileReader {
   getBuffer(start, end, setPos = true) {
     const length = end - start;
     const buffer = new Buffer.alloc(length);
-    
+
     fs.readSync(this.fd, buffer, 0, length, start);
-    
+
     if (setPos) {
       this.position += length;
     }
