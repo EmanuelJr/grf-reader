@@ -36,14 +36,14 @@ class GRF {
       throw error;
     }
 
-    const tableBuffer = this.fr.getBuffer(header.file_table_offset + 46, header.file_table_offset + 46 + 8);
+    const tableBuffer = this.fr.getBufferSync(header.file_table_offset + 46, header.file_table_offset + 46 + 8);
     const table = {
       pack_size: tableBuffer.readUInt32LE(0),
       real_size: tableBuffer.readUInt32LE(4),
       data: '',
     };
 
-    const buffer = this.fr.getBuffer(header.file_table_offset + 46 + 8, header.file_table_offset + 46 + 8 + table.pack_size);
+    const buffer = this.fr.getBufferSync(header.file_table_offset + 46 + 8, header.file_table_offset + 46 + 8 + table.pack_size);
     const out = zlib.inflateSync(buffer);
 
     const entries = this.loadEntries(out, header.filecount);
@@ -133,7 +133,7 @@ class GRF {
         throw 'Probably it is a folder';
       }
 
-      const buffer = this.fr.getBuffer(entry.offset + 46, entry.length_aligned + entry.offset + 46);
+      const buffer = await this.fr.getBuffer(entry.offset + 46, entry.length_aligned + entry.offset + 46);
 
       if (entry.real_size === entry.pack_size) {
         return buffer;

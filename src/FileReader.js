@@ -1,4 +1,7 @@
 const fs = require('fs');
+const util = require('util');
+
+const fsRead = util.promisify(fs.read);
 
 class FileReader {
   constructor(path) {
@@ -126,7 +129,19 @@ class FileReader {
     return out;
   }
 
-  getBuffer(start, end, setPos = true) {
+  async getBuffer(start, end, setPos = true) {
+    const length = end - start;
+    const buffer = new Buffer.alloc(length);
+    await fsRead(this.fd, buffer, 0, length, start);
+
+    if (setPos) {
+      this.position += length;
+    }
+
+    return buffer;
+  }
+
+  getBufferSync(start, end, setPos = true) {
     const length = end - start;
     const buffer = new Buffer.alloc(length);
 
