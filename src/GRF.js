@@ -36,20 +36,20 @@ class GRF {
       throw error;
     }
 
-    const tableBuffer = this.fr.getBuffer(header.file_table_offset + 46, header.file_table_offset + 46 + 8);    
+    const tableBuffer = this.fr.getBuffer(header.file_table_offset + 46, header.file_table_offset + 46 + 8);
     const table = {
       pack_size: tableBuffer.readUInt32LE(0),
       real_size: tableBuffer.readUInt32LE(4),
+      data: '',
     };
-    
+
     const buffer = this.fr.getBuffer(header.file_table_offset + 46 + 8, header.file_table_offset + 46 + 8 + table.pack_size);
     const out = zlib.inflateSync(buffer);
 
     const entries = this.loadEntries(out, header.filecount);
 
-    table.data = '';
     for (let i = 0; i < entries.length; i += 1) {
-      table.data += entries[i].filename + '\0';
+      table.data += `${entries[i].filename}\0`;
       entries[i].filename = entries[i].filename.toLowerCase();
     }
 
@@ -69,7 +69,7 @@ class GRF {
     this.entries = entries;
     this.table = table;
   }
-  
+
   loadEntries(out, count) {
     const entries = new Array(count);
 
@@ -109,7 +109,7 @@ class GRF {
     const entries = this.entries;
     const range = new Uint32Array([entries.length - 1, 0]);
 
-    while (range[1] < range[0]) {      
+    while (range[1] < range[0]) {
       const middle = range[1] + ((range[0] - range[1]) >> 1);
       const v = (entries[middle].filename < filename ? 1 : 0);
       range[v] = middle + v;
