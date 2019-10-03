@@ -1,9 +1,9 @@
-# GRF Reader
-[![npm version](https://badge.fury.io/js/grf-reader.svg)](https://www.npmjs.com/package/grf-reader)
+# GRF Reader [![npm version](https://badge.fury.io/js/grf-reader.svg)](https://www.npmjs.com/package/grf-reader)
+GRF Reader is a library for read GRF files, based in Promise functions.
 
 ## Basic usage
 The method `getFile` can be used to get the `Buffer` of the target file.
-You can get the list of files on `entries` field.
+You can get the file list on `entries` field.
 
 ```js
 const GRFReader = require('grf-reader');
