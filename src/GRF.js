@@ -1,11 +1,16 @@
 const zlib = require('zlib');
 const util = require('util');
+
 const FileReader = require('./FileReader');
 const DES = require('./DES');
 
 const inflate = util.promisify(zlib.inflate);
 
 class GRF {
+  static FILELIST_TYPE_FILE = 0x01;
+  static FILELIST_TYPE_ENCRYPT_MIXED = 0x02;
+  static FILELIST_TYPE_ENCRYPT_HEADER = 0x04;
+
   constructor(file) {
     this.fr = new FileReader(file);
 
@@ -145,9 +150,5 @@ class GRF {
     throw 'File does not exist';
   }
 }
-
-GRF.FILELIST_TYPE_FILE = 0x01;
-GRF.FILELIST_TYPE_ENCRYPT_MIXED = 0x02;
-GRF.FILELIST_TYPE_ENCRYPT_HEADER = 0x04;
 
 module.exports = GRF;
