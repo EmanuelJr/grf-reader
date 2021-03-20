@@ -1,8 +1,8 @@
 interface Entries {
     filename: string,
-    pack_size: number,
-    length_aligned: number,
-    real_size: number,
+    packSize: number,
+    lengthAligned: number,
+    realSize: number,
     type: number,
     offset: number,
 }
