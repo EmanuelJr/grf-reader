@@ -1,5 +1,5 @@
-# GRF Reader [![npm version](https://badge.fury.io/js/grf-reader.svg)](https://www.npmjs.com/package/grf-reader)
-GRF Reader is a library for read GRF files, based in Promise functions.
+# GRF Reader
+GRF Reader is a Javascript library to read Ragnarok GRF files.
 
 ## Basic usage
 The method `getFile` can be used to get the `Buffer` of the target file.
@@ -14,7 +14,7 @@ const grf = new GRFReader('./data.grf');
     const clientInfo = await grf.getFile('data\\clientinfo.xml');
     console.log(clientInfo.toString('utf8'));
   } catch (e) {
-    console.log(e);
+    console.error(e);
   }
 })();
 ```
