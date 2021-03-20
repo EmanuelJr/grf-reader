@@ -107,9 +107,9 @@ class FileReader {
   }
 
   readStruct(struct) {
-    const out = {};
-    const list = struct.list;
+    const { list } = struct;
     const keys = Object.keys(list);
+    const out = {};
 
     for (let i = 0; i < keys.length; i += 1) {
       const name = keys[i];

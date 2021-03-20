@@ -147,8 +147,8 @@ function decryptBlock(src, index) {
   finalPermutation(src, index);
 }
 
-function decodeFull(buf, len, entry_len) {
-  const { length } = entry_len.toString();
+function decodeFull(buf, len, entryLength) {
+  const { length } = entryLength.toString();
   const nblocks = len >> 3;
 
   const cycle = (length < 3) ? 1 :
@@ -175,8 +175,8 @@ function decodeFull(buf, len, entry_len) {
   }
 }
 
-function decodeHeader(buf, len) {
-  const nblocks = len >> 3;
+function decodeHeader(buf, length) {
+  const nblocks = length >> 3;
 
   for (let i = 0; i < 20 && i < nblocks; i += 1) {
     decryptBlock(buf, i * 8);
