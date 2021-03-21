@@ -1,6 +1,6 @@
 {
   "name": "grf-reader",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Read GRF files with Javascript",
   "main": "./src/GRF.js",
   "repository": {
