@@ -1,17 +1,45 @@
-const zlib = require('zlib');
-const util = require('util');
+import * as zlib from 'zlib';
+import * as util from 'util';
 
-const FileReader = require('./FileReader');
-const DES = require('./DES');
+import FileReader from './FileReader';
+import * as DES from './DES';
+
+interface Header {
+  signature: string;
+  key: number[];
+  fileTableOffset: number;
+  skip: number;
+  fileCount: number;
+  version: number;
+}
+
+interface Entry {
+  filename: string;
+  packSize: number;
+  lengthAligned: number;
+  realSize: number;
+  type: number;
+  offset: number;
+}
 
 const inflate = util.promisify(zlib.inflate);
 
 class GRF {
-  constructor(file) {
+  private static FILELIST_TYPE_FILE = 0x01;
+  private static FILELIST_TYPE_ENCRYPT_MIXED = 0x02;
+  private static FILELIST_TYPE_ENCRYPT_HEADER = 0x04;
+
+  private fr: FileReader;
+  public entries: Entry[];
+  public header: Header;
+
+  constructor(file: string) {
     this.fr = new FileReader(file);
 
-    const header = {
-      signature: this.fr.getMany('UInt8', 15),
+    const signature = this.fr.getMany('UInt8', 15);
+
+    const header: Header = {
+      signature: String.fromCharCode(...signature),
       key: this.fr.getMany('UInt8', 15),
       fileTableOffset: this.fr.getUInt32(),
       skip: this.fr.getUInt32(),
@@ -19,21 +47,21 @@ class GRF {
       version: this.fr.getUInt32(),
     };
 
-    header.signature = String.fromCharCode(...header.signature);
     header.fileCount -= header.skip + 7;
 
     if (header.signature !== 'Master of Magic') {
-      const error = `Incorrect header signature: "${header.signature}", should be "Master of Magic"`;
+      const error = `Incorrect header signature: "${header.signature}", must be "Master of Magic"`;
       throw error;
     }
 
-    if (parseInt(header.version, 10) !== 0x200) {
-      const error = `Incorrect header version "0x${parseInt(header.version, 10).toString(16)}", should be "0x200"`;
+    if (header.version !== 0x200) {
+      const error = `Incorrect header version "0x${header.version.toString(16)}", must be "0x200"`;
       throw error;
     }
 
-    if (header.fileTableOffset + 46 > file.size || header.fileTableOffset < 0) {
-      const error = `Can not jump to ${header.fileTableOffset} in table list, file length: ${file.size}`;
+    const fileSize = this.fr.getSize();
+    if (header.fileTableOffset + 46 > fileSize || header.fileTableOffset < 0) {
+      const error = `Can not jump to ${header.fileTableOffset} in table list, file length: ${fileSize}`;
       throw error;
     }
 
@@ -66,13 +94,12 @@ class GRF {
       return 0;
     });
 
-    this.header = header;
     this.entries = entries;
-    this.table = table;
+    this.header = header;
   }
 
-  loadEntries(out, count) {
-    const entries = new Array(count);
+  private loadEntries(out, count) {
+    const entries: Entry[] = new Array(count);
 
     for (let i = 0, pos = 0; i < count; i += 1) {
       let str = '';
@@ -94,7 +121,7 @@ class GRF {
     return entries;
   }
 
-  async decodeEntry(buffer, entry) {
+  private async decodeEntry(buffer, entry) {
     const data = new Uint8Array(buffer);
 
     if (entry.type & GRF.FILELIST_TYPE_ENCRYPT_MIXED) {
@@ -106,7 +133,7 @@ class GRF {
     return inflate(data);
   }
 
-  search(filename) {
+  public search(filename: string) {
     const entries = this.entries;
     const range = new Uint32Array([entries.length - 1, 0]);
 
@@ -123,7 +150,7 @@ class GRF {
     return -1;
   }
 
-  async getFile(filename) {
+  public async getFile(filename: string) {
     const path = filename.toLowerCase();
     const pos = this.search(path);
 
@@ -147,8 +174,4 @@ class GRF {
   }
 }
 
-GRF.FILELIST_TYPE_FILE = 0x01;
-GRF.FILELIST_TYPE_ENCRYPT_MIXED = 0x02;
-GRF.FILELIST_TYPE_ENCRYPT_HEADER = 0x04;
-
-module.exports = GRF;
+export default GRF;

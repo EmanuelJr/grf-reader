@@ -153,8 +153,8 @@ function decodeFull(buf, len, entryLength) {
 
   const cycle = (length < 3) ? 1 :
     (length < 5) ? length + 1 :
-    (length < 7) ? length + 9 :
-    length + 15;
+      (length < 7) ? length + 9 :
+        length + 15;
 
   for (let i = 0; i < 20 && i < nblocks; i += 1) {
     decryptBlock(buf, i * 8);
@@ -210,10 +210,11 @@ function shuffleDec(src, index) {
   tmp[5] = src[index + 2];
   tmp[6] = src[index + 5];
   tmp[7] = shuffleDecTable[src[index + 7]];
+
   src.set(tmp, index);
 }
 
-module.exports = {
+export {
   decodeFull,
   decodeHeader,
 };
