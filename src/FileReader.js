@@ -20,7 +20,7 @@ class FileReader {
   }
 
   getInt8() {
-    const buffer = new Buffer.alloc(1);
+    const buffer = Buffer.alloc(1);
     fs.readSync(this.fd, buffer, 0, 1, this.position);
     this.position += 1;
 
@@ -28,7 +28,7 @@ class FileReader {
   }
 
   getUInt8() {
-    const buffer = new Buffer.alloc(1);
+    const buffer = Buffer.alloc(1);
     fs.readSync(this.fd, buffer, 0, 1, this.position);
     this.position += 1;
 
@@ -36,7 +36,7 @@ class FileReader {
   }
 
   getInt16() {
-    const buffer = new Buffer.alloc(2);
+    const buffer = Buffer.alloc(2);
     fs.readSync(this.fd, buffer, 0, 2, this.position);
     this.position += 2;
 
@@ -44,7 +44,7 @@ class FileReader {
   }
 
   getUInt16() {
-    const buffer = new Buffer.alloc(2);
+    const buffer = Buffer.alloc(2);
     fs.readSync(this.fd, buffer, 0, 2, this.position);
     this.position += 2;
 
@@ -52,7 +52,7 @@ class FileReader {
   }
 
   getInt32() {
-    const buffer = new Buffer.alloc(4);
+    const buffer = Buffer.alloc(4);
     fs.readSync(this.fd, buffer, 0, 4, this.position);
     this.position += 4;
 
@@ -60,7 +60,7 @@ class FileReader {
   }
 
   getUInt32() {
-    const buffer = new Buffer.alloc(4);
+    const buffer = Buffer.alloc(4);
     fs.readSync(this.fd, buffer, 0, 4, this.position);
     this.position += 4;
 
@@ -68,7 +68,7 @@ class FileReader {
   }
 
   getFloat() {
-    const buffer = new Buffer.alloc(4);
+    const buffer = Buffer.alloc(4);
     fs.readSync(this.fd, buffer, 0, 4, this.position);
     this.position += 4;
 
@@ -76,7 +76,7 @@ class FileReader {
   }
 
   getDouble() {
-    const buffer = new Buffer.alloc(8);
+    const buffer = Buffer.alloc(8);
     fs.readSync(this.fd, buffer, 0, 8, this.position);
     this.position += 8;
 
@@ -84,7 +84,7 @@ class FileReader {
   }
 
   getString(length) {
-    const buffer = new Buffer.alloc(length);
+    const buffer = Buffer.alloc(length);
     fs.readSync(this.fd, buffer, 0, length, this.position);
     this.position += length;
 
@@ -99,6 +99,7 @@ class FileReader {
       if (!uInt8) {
         break;
       }
+
       out += String.fromCharCode(uInt8);
     }
 
@@ -131,7 +132,7 @@ class FileReader {
 
   async getBuffer(start, end, setPos = true) {
     const length = end - start;
-    const buffer = new Buffer.alloc(length);
+    const buffer = Buffer.alloc(length);
     await fsRead(this.fd, buffer, 0, length, start);
 
     if (setPos) {
@@ -143,7 +144,7 @@ class FileReader {
 
   getBufferSync(start, end, setPos = true) {
     const length = end - start;
-    const buffer = new Buffer.alloc(length);
+    const buffer = Buffer.alloc(length);
 
     fs.readSync(this.fd, buffer, 0, length, start);
 
