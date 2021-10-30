@@ -1,15 +1,24 @@
-const fs = require('fs');
-const util = require('util');
+import * as fs from 'fs';
+import * as util from 'util';
 
 const fsRead = util.promisify(fs.read);
 
 class FileReader {
-  constructor(path) {
+  private fd: number;
+  private position: number;
+  private size: number;
+
+  constructor(path: string) {
     this.fd = fs.openSync(path, 'r');
+    this.size = fs.fstatSync(this.fd).size;
     this.position = 0;
   }
 
-  getMany(type, size) {
+  getSize() {
+    return this.size;
+  }
+
+  getMany(type: string, size: number) {
     const values = new Array(size);
     const func = `get${type}`;
 
@@ -83,7 +92,7 @@ class FileReader {
     return buffer.readDoubleLE(0);
   }
 
-  getString(length) {
+  getString(length: number) {
     const buffer = Buffer.alloc(length);
     fs.readSync(this.fd, buffer, 0, length, this.position);
     this.position += length;
@@ -91,16 +100,16 @@ class FileReader {
     return buffer.toString('utf8');
   }
 
-  getBinaryString(length) {
+  getBinaryString(length: number) {
     let out = '';
 
     for (let i = 0; i < length; i += 1) {
-      const uInt8 = this.getUInt8();
-      if (!uInt8) {
+      const char = this.getUInt8();
+      if (!char) {
         break;
       }
 
-      out += String.fromCharCode(uInt8);
+      out += String.fromCharCode(char);
     }
 
     this.position += length;
@@ -130,7 +139,7 @@ class FileReader {
     return out;
   }
 
-  async getBuffer(start, end, setPos = true) {
+  async getBuffer(start: number, end: number, setPos = true) {
     const length = end - start;
     const buffer = Buffer.alloc(length);
     await fsRead(this.fd, buffer, 0, length, start);
@@ -142,7 +151,7 @@ class FileReader {
     return buffer;
   }
 
-  getBufferSync(start, end, setPos = true) {
+  getBufferSync(start: number, end: number, setPos = true) {
     const length = end - start;
     const buffer = Buffer.alloc(length);
 
@@ -155,9 +164,9 @@ class FileReader {
     return buffer;
   }
 
-  setPos(pos) {
+  setPos(pos: number) {
     this.position = pos;
   }
 }
 
-module.exports = FileReader;
+export default FileReader;
