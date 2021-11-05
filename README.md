@@ -7,15 +7,15 @@ You can get the file list on `entries` field.
 
 ```js
 const GRFReader = require('grf-reader');
+
 const grf = new GRFReader('./data.grf');
 
-(async () => {
-  try {
-    const clientInfo = await grf.getFile('data\\clientinfo.xml');
-    console.log(clientInfo.toString('utf8'));
-  } catch (e) {
-    console.error(e);
-  }
-})();
-```
+const getClientInfo = async () => {
+  const clientInfo = await grf.getFile('data\\clientinfo.xml');
+  return clientInfo.toString('utf8');
+};
 
+getClientInfo()
+  .then(console.log)
+  .catch(console.error);
+```
