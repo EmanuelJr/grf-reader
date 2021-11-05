@@ -2,7 +2,8 @@
 GRF Reader is a Javascript library to read Ragnarok GRF files.
 
 ## Basic usage
-The method `getFile` can be used to get the `Buffer` of the target file.
+The method `getFile` returns a `Buffer` of target file if exists.
+
 You can get the file list on `entries` field.
 
 ```js
