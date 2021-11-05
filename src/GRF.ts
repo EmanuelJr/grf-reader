@@ -33,8 +33,8 @@ class GRF {
   public entries: Entry[];
   public header: Header;
 
-  constructor(file: string) {
-    this.fr = new FileReader(file);
+  constructor(filepath: string) {
+    this.fr = new FileReader(filepath);
 
     const signature = this.fr.getMany('UInt8', 15);
 
@@ -141,7 +141,7 @@ class GRF {
 
     while (range[1] < range[0]) {
       const middle = range[1] + ((range[0] - range[1]) >> 1);
-      const v = (entries[middle].filename < filename ? 1 : 0);
+      const v = (entries[middle].filename < filename) ? 1 : 0;
       range[v] = middle + v;
     }
 
