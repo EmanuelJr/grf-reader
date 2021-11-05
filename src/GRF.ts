@@ -3,6 +3,10 @@ import * as util from 'util';
 
 import FileReader from './FileReader';
 import * as DES from './DES';
+import {
+  GRFHeaderException,
+  GRFFileException,
+} from './exceptions';
 
 interface Header {
   signature: string;
@@ -52,18 +56,18 @@ class GRF {
 
     if (header.signature !== 'Master of Magic') {
       const error = `Incorrect header signature: "${header.signature}", must be "Master of Magic"`;
-      throw error;
+      throw new GRFHeaderException(error);
     }
 
     if (header.version !== 0x200) {
       const error = `Incorrect header version "0x${header.version.toString(16)}", must be "0x200"`;
-      throw error;
+      throw new GRFHeaderException(error);
     }
 
     const fileSize = this.fr.getSize();
     if (header.fileTableOffset + 46 > fileSize || header.fileTableOffset < 0) {
       const error = `Can not jump to ${header.fileTableOffset} in table list, file length: ${fileSize}`;
-      throw error;
+      throw new GRFHeaderException(error);
     }
 
     const tableBuffer = this.fr.getBufferSync(header.fileTableOffset + 46, header.fileTableOffset + 46 + 8);
@@ -166,7 +170,7 @@ class GRF {
       const entry = this.entries[pos];
 
       if (!(entry.type & GRF.FILELIST_TYPE_FILE)) {
-        throw 'It is a folder';
+        throw new GRFFileException('The file path must be a regular file, it is probably a folder');
       }
 
       const buffer = await this.fr.getBuffer(entry.offset + 46, entry.lengthAligned + entry.offset + 46);
@@ -178,7 +182,7 @@ class GRF {
       return this.decodeEntry(buffer, entry);
     }
 
-    throw 'File does not exist';
+    throw new GRFFileException('This file does not exist');
   }
 }
 
