@@ -129,6 +129,12 @@ class GRF {
     return inflate(data);
   }
 
+  /**
+   * Returns the file position in the GRF
+   *
+   * @param filename - The file full path inside the GRF
+   * @returns The file position, if not found returns `-1`
+   */
   public search(filename: string) {
     const entries = this.entries;
     const range = new Uint32Array([entries.length - 1, 0]);
@@ -146,6 +152,12 @@ class GRF {
     return -1;
   }
 
+  /**
+   * Returns the file buffer from the GRF file
+   *
+   * @param filename - The file full path inside the GRF
+   * @returns File `Buffer`
+   */
   public async getFile(filename: string) {
     const path = filename.toLowerCase();
     const pos = this.search(path);
