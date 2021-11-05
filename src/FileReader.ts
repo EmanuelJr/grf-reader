@@ -116,29 +116,6 @@ class FileReader {
     return out;
   }
 
-  readStruct(struct) {
-    const { list } = struct;
-    const keys = Object.keys(list);
-    const out = {};
-
-    for (let i = 0; i < keys.length; i += 1) {
-      const name = keys[i];
-      const current = list[name];
-
-      if (current.count > 1) {
-        out[name] = new Array(current.count);
-
-        for (let j = 0; j < current.count; j += 1) {
-          out[name][j] = this[current.function]();
-        }
-      } else {
-        out[name] = this[current.function]();
-      }
-    }
-
-    return out;
-  }
-
   async getBuffer(start: number, end: number, setPos = true) {
     const length = end - start;
     const buffer = Buffer.alloc(length);

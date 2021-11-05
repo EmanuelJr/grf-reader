@@ -48,6 +48,7 @@ class GRF {
     };
 
     header.fileCount -= header.skip + 7;
+    this.header = header;
 
     if (header.signature !== 'Master of Magic') {
       const error = `Incorrect header signature: "${header.signature}", must be "Master of Magic"`;
@@ -69,7 +70,6 @@ class GRF {
     const table = {
       packSize: tableBuffer.readUInt32LE(0),
       realSize: tableBuffer.readUInt32LE(4),
-      data: '',
     };
 
     const buffer = this.fr.getBufferSync(header.fileTableOffset + 46 + 8, header.fileTableOffset + 46 + 8 + table.packSize);
@@ -78,7 +78,6 @@ class GRF {
     const entries = this.loadEntries(out, header.fileCount);
 
     for (let i = 0; i < entries.length; i += 1) {
-      table.data += `${entries[i].filename}\0`;
       entries[i].filename = entries[i].filename.toLowerCase();
     }
 
@@ -95,7 +94,6 @@ class GRF {
     });
 
     this.entries = entries;
-    this.header = header;
   }
 
   private loadEntries(out, count) {
@@ -121,9 +119,7 @@ class GRF {
     return entries;
   }
 
-  private async decodeEntry(buffer, entry) {
-    const data = new Uint8Array(buffer);
-
+  private async decodeEntry(data, entry) {
     if (entry.type & GRF.FILELIST_TYPE_ENCRYPT_MIXED) {
       DES.decodeFull(data, entry.lengthAligned, entry.packSize);
     } else if (entry.type & GRF.FILELIST_TYPE_ENCRYPT_HEADER) {
