@@ -2,7 +2,7 @@
   "name": "grf-reader",
   "version": "2.0.1",
   "description": "Read GRF files with Javascript",
-  "main": "dist/GRF.js",
+  "main": "dist/index.js",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/emanueljr/grf-reader.git"
