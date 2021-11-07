@@ -1,7 +1,7 @@
 {
   "name": "grf-reader",
   "version": "2.0.1",
-  "description": "Read GRF files with Javascript",
+  "description": "Read GRF files with TypeScript",
   "main": "dist/index.js",
   "repository": {
     "type": "git",
