@@ -116,7 +116,7 @@ class GRF {
         lengthAligned: out[pos++] | out[pos++] << 8 | out[pos++] << 16 | out[pos++] << 24,
         realSize: out[pos++] | out[pos++] << 8 | out[pos++] << 16 | out[pos++] << 24,
         type: out[pos++],
-        offset: out[pos++] | out[pos++] << 8 | out[pos++] << 16 | out[pos++] << 24,
+        offset: (out[pos++] | out[pos++] << 8 | out[pos++] << 16 | out[pos++] << 24) >>> 0,
       };
     }
 
